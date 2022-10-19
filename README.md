@@ -1,70 +1,104 @@
-# Getting Started with Create React App
+# How to change React UI theme according to the environment
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+As you may know for the most cases, we can use environment variables for different environments rather than hard coding the API URLs, API Keys, and other config stuff. The mostly using environments are development and production.
 
-## Available Scripts
+There is another use case, which may want to use environment configurations. Which is to change the theme according to the environment. Same app for two or more different vendors. This is the best solution, if the same app gives to different customers, they may delightfully, if the app has same theme which mapping to their business theme.
 
-In the project directory, you can run:
+## env-cmd
 
-### `npm start`
+**A simple node program for executing commands using an environment from an env file.**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+For the different environment configuration stuff can use ‘.env-cmdrc.json’ file. Can write our configs as json format, which give more readability and maintainability. Which should locate at the root directory.(see figure 1)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+![image](https://user-images.githubusercontent.com/18750243/196567746-7fc6685a-0413-4a03-9c8d-5e701b9e97bc.png)
 
-### `npm test`
+##  How to install
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### `npm install env-cmd or npm install -g env-cmd`
 
-### `npm run build`
+Sample of .env-cmdrc.json file
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+{
+“client1”: {
+“REACT_APP_NAME”: “client-1”
+},
+“client2”: {
+“REACT_APP_NAME”: “client-2”
+}
+}
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Above, json config, put two configuration environments for two different clients. Which is client-1 and client-2. All the configs names should start prefix with “REACT_APP”.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## How can we start with needed environment?
 
-### `npm run eject`
+In package.json file, there is script section. As my example,
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+“scripts”: {
+“start”: “react-scripts start”,
+“build”: “react-scripts build”
+}
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+In that script we can see command from the left side (json property name). The right side, we can see particular script file. While changing left side property, we can set out an argument, As above example, we can start the react app by using “npm run start” command. Here we use “start” property name as argument. As the same way we can set our argument according to environment.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+“scripts”: {
+“start:client1”: “env-cmd -e client1 react-scripts start”,
+“start:client2”: “env-cmd -e client2 react-scripts start”,
+“build:client1”: “env-cmd -e client1 react-scripts build”,
+“build:client2”: “env-cmd -e client2 react-scripts build”
+}
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Here set separate arguments for separate environments. As property value, can set env-cmd script by passing the environment name, which mentioned in the .env-cmdrc.json. So can start the app for the client1 (environment variable) by using “npm run start:client1”.
 
-## Learn More
+### `styling`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Here using SCSS files for styling. Then can pass style values as parameters. SCSS can use if supose to use common styling files. Otherwise it is not required thing to use SCSS file. Before use SCSS file, it is required to install node-sass package.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### npm install node-sass
 
-### Code Splitting
+![image](https://user-images.githubusercontent.com/18750243/196568221-0bf69985-bc3c-4c79-9498-b7cd613ca3e1.png)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+According to the above image, create a resource folder inside ‘src’. Likewise create separate ‘scss’ files for the different client and there is main style.scss file, which will be imported by other ‘env.scss’ files.
 
-### Analyzing the Bundle Size
+### resource/env/client1/env.scss
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+    // client-1 env.scss file
+    $theme: red;
 
-### Making a Progressive Web App
+    @import “../../style.scss”;
+    
+### resource/env/client2/env.scss
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+    // client-2 scss file
+    $theme: blue;
 
-### Advanced Configuration
+    @import “../../style.scss”;
+ 
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### resource/style.scss
 
-### Deployment
+.App {
+background: $theme;
+}
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Finally, I can import required ‘scss’ file in ‘App.js’ file and use it’s styles.
 
-### `npm run build` fails to minify
+if (process.env.REACT_APP_NAME === ‘client-1’) {
+require(“./resource/env/client1/env.scss”);
+}
+else {
+require(“./resource/env/client2/env.scss”);
+}
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+or
+
+require("./resource/env/"+process.env.REACT_APP_NAME+"/env.scss");
+
+## Demo…
+
+npm run start:client1
+
+![image](https://user-images.githubusercontent.com/18750243/196568547-6f352ade-3209-4e16-97b7-bbb9bb4c4138.png)
+
+npm run start:client2
+
+![image](https://user-images.githubusercontent.com/18750243/196568579-12d16e5e-16bd-4847-95ea-cf0b018e62b4.png)
